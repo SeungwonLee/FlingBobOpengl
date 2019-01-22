@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">FlingBob</string>
+    <string name="title_activity_mapping_bob">MappingBobActivity</string>
+</resources>

@@ -21,39 +21,38 @@ class ColoredTriangleRenderer : GLSurfaceView.Renderer {
 
     init {
         val byteBuffer = ByteBuffer
-            .allocateDirect(3 * VERTEX_SIZE)
-            .order(ByteOrder.nativeOrder()) // why??
+            .allocateDirect(3 * VERTEX_SIZE) // Native Heap Memory, If not RuntimeException.
+            .order(ByteOrder.nativeOrder()) // Big-Endian or Little-Endian
         vertices = byteBuffer.asFloatBuffer()
         vertices.put(
             floatArrayOf(
+                // x, y, R, G, B, A
                 0.0f, 0.0f, 1f, 0f, 0f, 1f,
                 319.0f, 0.0f, 0f, 1f, 0f, 1f,
                 160.0f, 479.0f, 0f, 0f, 1f, 1f
             )
         )
-        vertices.flip()
     }
 
     override fun onDrawFrame(gl: GL10?) {
-        if(BuildConfig.DEBUG) {
-            Log.d("This", "onDrawFrame: ")
+        if (BuildConfig.DEBUG) {
+            Log.d("This", "onDrawFrame: $width $height")
         }
 
         if (gl == null) {
             return
         }
-        gl.glViewport(0, 0, width, height)
-        gl.glClear(GL_COLOR_BUFFER_BIT)
+        gl.glViewport(0, 0, width, height) // the resolution of the current screen
+        gl.glClear(GL_COLOR_BUFFER_BIT) // initialize the previous color value
 
         gl.glMatrixMode(GL_PROJECTION)
-        gl.glLoadIdentity()
-        gl.glOrthof(0f, 320f, 0f, 480f, 1f, -1f)
+        gl.glLoadIdentity() // initialize the matrix calculation
+        gl.glOrthof(0f, 320f, 0f, 480f, 1f, -1f) // (0,0,1) ~ (480,320,-1)
 
-
-        gl.glEnableClientState(GLES10.GL_VERTEX_ARRAY)
         gl.glEnableClientState(GLES10.GL_COLOR_ARRAY)
+        gl.glEnableClientState(GLES10.GL_VERTEX_ARRAY)
 
-        // set triangle vertices
+        // set triangle vertices, GL don't know what it is the triangle vertex.
         vertices.position(0)
         gl.glVertexPointer(
             2,
@@ -62,7 +61,7 @@ class ColoredTriangleRenderer : GLSurfaceView.Renderer {
             vertices
         )
 
-        // set color vertices
+        // set color vertices, GL don't know what it is the color code.
         vertices.position(2)
         gl.glColorPointer(
             4,

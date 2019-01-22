@@ -13,6 +13,7 @@ import java.nio.FloatBuffer
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
+
 class MappingBobTextureRenderer(private val context: Context) : GLSurfaceView.Renderer {
 
     private var vertices: FloatBuffer
@@ -29,9 +30,9 @@ class MappingBobTextureRenderer(private val context: Context) : GLSurfaceView.Re
         vertices = byteBuffer.asFloatBuffer()
         vertices = vertices.put(
             floatArrayOf(
-                0.0f, 0.0f, 0.0f, 1.0f,
-                319.0f, 0.0f, 1.0f, 1.0f,
-                160.0f, 479.0f, 0.5f, 0.0f
+                0.0f, 0.0f, 0.0f, 0.0f,
+                319.0f, 0.0f, 1.0f, 0.0f,
+                160.0f, 479.0f, 0.5f, 1.0f
             )
         )
         vertices.flip()
@@ -41,7 +42,9 @@ class MappingBobTextureRenderer(private val context: Context) : GLSurfaceView.Re
 
     private fun loadTexture(): Int {
         try {
-            val bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.colored_bg)
+            val option = BitmapFactory.Options()
+            val bitmap =
+                BitmapFactory.decodeResource(context.resources, R.drawable.bobrgb888, option)
             val textureIds = IntArray(1)
             GLES10.glGenTextures(1, textureIds, 0)
             val textureId = textureIds[0]
@@ -57,8 +60,8 @@ class MappingBobTextureRenderer(private val context: Context) : GLSurfaceView.Re
                 GL10.GL_TEXTURE_MAG_FILTER,
                 GL10.GL_NEAREST.toFloat()
             )
-//            GLES10.glBindTexture(GL10.GL_TEXTURE_2D, 0)
-//            bitmap.recycle()
+            GLES10.glBindTexture(GL10.GL_TEXTURE_2D, 0)
+            bitmap?.recycle()
 
             Log.d("TexturedTriangleTest", "textureId=$textureId")
 
@@ -92,11 +95,19 @@ class MappingBobTextureRenderer(private val context: Context) : GLSurfaceView.Re
         gl.glTexCoordPointer(2, GL10.GL_FLOAT, VERTEX_SIZE, vertices)
 
         gl.glDrawArrays(GL10.GL_TRIANGLES, 0, 3)
+
+        gl.glDisableClientState(GL10.GL_VERTEX_ARRAY)
+        gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY)
+
+        gl.glDisable(GL10.GL_TEXTURE_2D)
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
         this.width = width
         this.height = height
+
+        gl?.glViewport(0, 0, width, height)
+        gl?.glClear(GLES10.GL_COLOR_BUFFER_BIT)
     }
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
